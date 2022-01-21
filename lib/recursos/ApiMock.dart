@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+import 'package:popquiz/model/Pergunta.dart';
 import 'dart:convert' as conversor;
 import 'package:popquiz/model/Questionario.dart';
 
@@ -20,6 +21,27 @@ class ApiMock {
       }
 
       return listaDeQuestionario;
+    } else {
+      print("Aconteceu algo de errado!");
+      print("Código do erro: ${respostaResquisicaoHttp.statusCode}");
+    }
+
+    return null;
+  }
+
+  Future<List<Pergunta>?> recuperarPergunstasDoQuestionario(String idDoQuestionario) async {
+    var url = Uri.parse(URL+'/$idDoQuestionario');
+    var respostaResquisicaoHttp = await http.get(url);
+
+    if (respostaResquisicaoHttp.statusCode == 200) {
+      Map<String, dynamic> dadosEmJson = conversor.json.decode(respostaResquisicaoHttp.body);
+      List<Pergunta> listaDePerguntas = [];
+      listaDePerguntas =
+          dadosEmJson["questoes"].map<Pergunta>((map) {
+        return Pergunta.fromJson(map);
+      }).toList();
+      
+      return listaDePerguntas;
     } else {
       print("Aconteceu algo de errado!");
       print("Código do erro: ${respostaResquisicaoHttp.statusCode}");

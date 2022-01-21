@@ -61,7 +61,9 @@ class _TodosOsQuestionariosState extends State<TodosOsQuestionarios> {
 
                       return GestureDetector(
                         onTap: () {
-                          print('ID: ${questionario.id} selecionado');
+                          Navigator.pushNamed(context,
+                              RotasDasPaginas.ROTA_PERGUNTAS_DO_QUESTIONARIO,
+                              arguments: questionario.id.toString());
                         },
                         child: Card(
                           elevation: 0,
