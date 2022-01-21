@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:popquiz/recursos/RotasDasPaginas.dart';
 import 'package:popquiz/telas/PaginaInicial.dart';
+import 'dart:io';
+
+class MyHttpOverrides extends HttpOverrides{
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+    ..badCertificateCallback = (X509Certificate cert, String host, int port)=> true;
+  }
+}
 
 final ThemeData temaPadrao = ThemeData(
   primaryColor: Colors.white,
@@ -10,6 +19,7 @@ final ThemeData temaPadrao = ThemeData(
 );
 
 void main() {
+  HttpOverrides.global = new MyHttpOverrides();
   runApp(
     MaterialApp(
       home: PaginaInicial(),

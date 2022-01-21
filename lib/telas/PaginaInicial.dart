@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:popquiz/recursos/Constantes.dart';
 import 'package:popquiz/telas/abas/ApenasOsQuestionariosRespondidos.dart';
 import 'package:popquiz/telas/abas/TodosOsQuestionarios.dart';
 
@@ -38,7 +39,11 @@ class _PaginaInicialState extends State<PaginaInicial>
         bottom: TabBar(
           controller: _controladorDaAba,
           labelColor: Colors.black,
-          indicatorColor: Colors.grey,
+          labelStyle: TextStyle(
+            fontSize: tamanhoDaLetra
+          ),
+          indicatorColor: Colors.black,
+          unselectedLabelColor: Colors.grey,
           tabs: <Widget>[
             Tab(
               text: "Todos",
