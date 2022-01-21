@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 import 'package:popquiz/main.dart';
+import 'package:popquiz/model/Questionario.dart';
+import 'package:popquiz/recursos/ApiMock.dart';
 import 'package:popquiz/recursos/Constantes.dart';
 import 'package:popquiz/recursos/widget/BotaoCustomizado.dart';
 import 'package:popquiz/recursos/widget/InputCustomizado.dart';
@@ -15,6 +17,18 @@ class NovoQuestionario extends StatefulWidget {
 
 class _NovoQuestionarioState extends State<NovoQuestionario> {
   final _chave = GlobalKey<FormState>();
+  late String _tituloQuestionario;
+  bool _adicionandoNovoQuestionario = false;
+
+  Future<void> _adicionarNovoQuestionario(Questionario questionario) async {
+    ApiMock api = ApiMock();
+    await api.salvarNovoQuestionario(questionario).then((_) {
+      setState(() {
+        _adicionandoNovoQuestionario = false;
+      });
+      //AVISAR AO USUÁRIO QUE O QUESTIONÁRIO FOI SALVO
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,11 +68,8 @@ class _NovoQuestionarioState extends State<NovoQuestionario> {
                         Icons.text_fields,
                         color: temaPadrao.accentColor,
                       ),
-                      onSaved: (nome) {
-                     
-                      },
-                      onSubmitted: (_) {
-                        
+                      onSaved: (tituloQuestionario) {
+                        _tituloQuestionario = tituloQuestionario!;
                       },
                       type: TextInputType.name,
                       validator: (valor) {
@@ -75,14 +86,31 @@ class _NovoQuestionarioState extends State<NovoQuestionario> {
                   ),
                   Padding(
                     padding: EdgeInsets.only(top: 16, bottom: 10),
-                    child: BotaoCustomizado(
-                      texto: "Criar",
-                      onPressed: () {
-                        if (_chave.currentState!.validate()) {
-                          _chave.currentState!.save();
-                        } else {}
-                      },
-                    ),
+                    child: _adicionandoNovoQuestionario
+                        ? TextButton(
+                            onPressed: () {},
+                            child: CircularProgressIndicator(
+                              color: temaPadrao.buttonColor,
+                            ),
+                          )
+                        : BotaoCustomizado(
+                            texto: "Criar",
+                            onPressed: () async {
+
+                              if (_chave.currentState!.validate()) {
+                                _chave.currentState!.save();
+                                setState(() {
+                                  _adicionandoNovoQuestionario = true;
+                                });
+                                //APARENTEMENTE, o MockAPI GERA UM ID AUTOMATICAMENTE!!!!
+                                String idQuestionario = DateTime.now().microsecondsSinceEpoch.toString();
+                                Questionario questionario = Questionario(idQuestionario, _tituloQuestionario);
+                                await _adicionarNovoQuestionario(questionario);
+                              } else {
+                                //
+                              }
+                            },
+                          ),
                   ),
                 ],
               ),

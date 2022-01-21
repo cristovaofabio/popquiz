@@ -49,4 +49,24 @@ class ApiMock {
 
     return null;
   }
+
+  Future<void> salvarNovoQuestionario(Questionario questionario) async{
+    var url = Uri.parse(URL);
+    var cabecalho = {'Content-type': 'application/json; charset=UTF-8'};
+    var corpo = conversor.json.encode(
+      {
+        "id": questionario.id,
+        "titulo": questionario.titulo,
+        "questoes": []
+      }
+    );
+    
+    http.Response resposta = await http.post(
+        url,
+        headers: cabecalho,
+        body: corpo);
+
+    print("Informações enviadas: ${resposta.body}");
+    print("Status do envio: ${resposta.statusCode}");
+  }
 }
