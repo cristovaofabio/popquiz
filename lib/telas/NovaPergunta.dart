@@ -1,35 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lottie/lottie.dart';
 import 'package:popquiz/main.dart';
-import 'package:popquiz/model/Questionario.dart';
+import 'package:popquiz/model/Pergunta.dart';
 import 'package:popquiz/recursos/ApiMock.dart';
 import 'package:popquiz/recursos/Constantes.dart';
 import 'package:popquiz/recursos/widget/BotaoCustomizado.dart';
 import 'package:popquiz/recursos/widget/InputCustomizado.dart';
 import 'package:popquiz/recursos/widget/MensagemDeConfirmacaoDeAcao.dart';
 
-class NovoQuestionario extends StatefulWidget {
-  const NovoQuestionario({Key? key}) : super(key: key);
+class NovaPergunta extends StatefulWidget {
+  late final String _idDoQuestionario;
+  NovaPergunta(this._idDoQuestionario);
 
   @override
-  _NovoQuestionarioState createState() => _NovoQuestionarioState();
+  _NovaPerguntaState createState() => _NovaPerguntaState();
 }
 
-class _NovoQuestionarioState extends State<NovoQuestionario> {
+class _NovaPerguntaState extends State<NovaPergunta> {
   final _chave = GlobalKey<FormState>();
-  late String _tituloQuestionario;
-  bool _adicionandoNovoQuestionario = false;
+  late String _textoDaPergunta;
+  late String _descricaoDaPergunta;
+  bool _adicionandoNovaPergunta = false;
 
-  Future<void> _adicionarNovoQuestionario(Questionario questionario) async {
+  Future<void> _adicionarNovaPergunta(Pergunta pergunta) async {
     ApiMock api = ApiMock();
-    await api.salvarNovoQuestionario(questionario).then((_) {
+
+    await api.salvarNovaPergunta(widget._idDoQuestionario.toString(), pergunta).then((_) {
       setState(() {
-        _adicionandoNovoQuestionario = false;
+        _adicionandoNovaPergunta = false;
       });
+      
       ScaffoldMessenger.of(context).showSnackBar(
           mensagemDeConfirmacaoDeAcao(
-            'Questionário criado!',
+            'Pergunta adicionada!',
             Color(0xFF43A047),
             Icons.thumb_up,
           ),
@@ -41,7 +44,7 @@ class _NovoQuestionarioState extends State<NovoQuestionario> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Novo questionário"),
+        title: Text('Nova pergunta'),
         elevation: 0,
       ),
       body: Container(
@@ -53,15 +56,10 @@ class _NovoQuestionarioState extends State<NovoQuestionario> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  Lottie.asset(
-                    "assets/animacao.json",
-                    width: 200,
-                    height: 200,
-                  ),
                   Padding(
                     padding: EdgeInsets.only(top: 30, bottom: 10),
                     child: Text(
-                      "TÍTULO:",
+                      "TEXTO:",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: tamanhoDaLetra,
@@ -72,11 +70,11 @@ class _NovoQuestionarioState extends State<NovoQuestionario> {
                     padding: EdgeInsets.only(bottom: 10, top: 5),
                     child: InputCustomizado(
                       icone: Icon(
-                        Icons.text_fields,
+                        Icons.edit,
                         color: temaPadrao.accentColor,
                       ),
-                      onSaved: (tituloQuestionario) {
-                        _tituloQuestionario = tituloQuestionario!;
+                      onSaved: (textoDaPergunta) {
+                        _textoDaPergunta = textoDaPergunta!;
                       },
                       type: TextInputType.name,
                       validator: (valor) {
@@ -84,16 +82,39 @@ class _NovoQuestionarioState extends State<NovoQuestionario> {
                           return 'Informe pelo menos 3 caracteres';
                         return null;
                       },
-                      inputFormaters: [
-                        FilteringTextInputFormatter(RegExp("[a-z A-Z á-ú Á-Ú]"),
-                            allow: true)
-                      ],
+                      letras: TextCapitalization.sentences,
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(top: 30, bottom: 10),
+                    child: Text(
+                      "DESCRIÇÃO:",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: tamanhoDaLetra,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 10, top: 5),
+                    child: InputCustomizado(
+                      maxLinhas: 3,
+                      maxCaracteres: 100,
+                      onSaved: (descricaoDaPergunta) {
+                        _descricaoDaPergunta = descricaoDaPergunta!;
+                      },
+                      type: TextInputType.name,
+                      validator: (valor) {
+                        if (valor!.isEmpty || valor.length < 3)
+                          return 'Informe pelo menos 3 caracteres';
+                        return null;
+                      },
                       letras: TextCapitalization.sentences,
                     ),
                   ),
                   Padding(
                     padding: EdgeInsets.only(top: 16, bottom: 10),
-                    child: _adicionandoNovoQuestionario
+                    child: _adicionandoNovaPergunta
                         ? TextButton(
                             onPressed: () {},
                             child: CircularProgressIndicator(
@@ -101,18 +122,17 @@ class _NovoQuestionarioState extends State<NovoQuestionario> {
                             ),
                           )
                         : BotaoCustomizado(
-                            texto: "Criar",
+                            texto: "Adicionar",
                             onPressed: () async {
-
                               if (_chave.currentState!.validate()) {
                                 _chave.currentState!.save();
                                 setState(() {
-                                  _adicionandoNovoQuestionario = true;
+                                  _adicionandoNovaPergunta = true;
                                 });
-                                //APARENTEMENTE, o MockAPI GERA UM ID AUTOMATICAMENTE!!!!
-                                String idQuestionario = DateTime.now().microsecondsSinceEpoch.toString();
-                                Questionario questionario = Questionario(idQuestionario, _tituloQuestionario);
-                                await _adicionarNovoQuestionario(questionario);
+
+                                String idPergunta = DateTime.now().microsecondsSinceEpoch.toString();
+                                Pergunta pergunta = Pergunta(idPergunta,_textoDaPergunta, _descricaoDaPergunta);
+                                await _adicionarNovaPergunta(pergunta);
                               } else {
                                 //
                               }

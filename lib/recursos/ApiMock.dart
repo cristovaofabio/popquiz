@@ -69,4 +69,26 @@ class ApiMock {
     print("Informações enviadas: ${resposta.body}");
     print("Status do envio: ${resposta.statusCode}");
   }
+
+  Future<void> salvarNovaPergunta(String idQuestionario, Pergunta pergunta) async{
+    String _extencaoDaURL = "/$idQuestionario/questoes";
+    var url = Uri.parse(URL+_extencaoDaURL);
+    var cabecalho = {'Content-type': 'application/json; charset=UTF-8'};
+    var corpo = conversor.json.encode(
+      {
+        "id": pergunta.id,
+        "texto": pergunta.texto,
+        "descricao": pergunta.descricao,
+        "questionarioId": idQuestionario,
+      }
+    );
+    
+    http.Response resposta = await http.post(
+        url,
+        headers: cabecalho,
+        body: corpo);
+
+    print("Informações enviadas: ${resposta.body}");
+    print("Status do envio: ${resposta.statusCode}");
+  }
 }

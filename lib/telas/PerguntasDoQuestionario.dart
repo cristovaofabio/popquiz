@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:popquiz/main.dart';
 import 'package:popquiz/model/Pergunta.dart';
 import 'package:popquiz/recursos/ApiMock.dart';
 import 'package:popquiz/recursos/Constantes.dart';
+import 'package:popquiz/recursos/RotasDasPaginas.dart';
 
 class PerguntasDoQuestionario extends StatefulWidget {
   late final String _idDoQuestionario;
@@ -19,12 +21,28 @@ class _PerguntasDoQuestionarioState extends State<PerguntasDoQuestionario> {
     return api.recuperarPergunstasDoQuestionario(idDoQuestionario);
   }
 
+  _mudarParaATelaNovaPergunta() {
+    //Verificar isso!
+    Navigator.pushReplacementNamed(context, RotasDasPaginas.ROTA_NOVA_PERGUNTA,
+        arguments: widget._idDoQuestionario.toString());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text("Todas as perguntas"),
         elevation: 0,
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: FloatingActionButton(
+        elevation: 0,
+        backgroundColor: temaPadrao.buttonColor,
+        onPressed: _mudarParaATelaNovaPergunta,
+        child: Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
       ),
       body: FutureBuilder<List<Pergunta>>(
         future: _listarPerguntasDoQuestionario(widget._idDoQuestionario),
@@ -44,14 +62,15 @@ class _PerguntasDoQuestionarioState extends State<PerguntasDoQuestionario> {
                   child: Text("Erro ao carregar os dados!"),
                 );
               } else {
-                return ListView.builder(
-                    itemCount: snapshot.data!.length,
+                int quantidadeDePerguntas = snapshot.data!.length;
+                if (quantidadeDePerguntas == 0) {
+                  return Lottie.asset("assets/animacaoNenhumaPergunta.json");
+                } else {
+                  return ListView.builder(
+                    itemCount: quantidadeDePerguntas,
                     itemBuilder: (context, index) {
                       List<Pergunta>? lista = snapshot.data;
-                      if(lista!.isEmpty){
-                        //return ;
-                      }
-                      Pergunta pergunta = lista[index];
+                      Pergunta pergunta = lista![index];
 
                       return GestureDetector(
                         onTap: () {
@@ -72,7 +91,9 @@ class _PerguntasDoQuestionarioState extends State<PerguntasDoQuestionario> {
                           ),
                         ),
                       );
-                    });
+                    },
+                  );
+                }
               }
           }
         },

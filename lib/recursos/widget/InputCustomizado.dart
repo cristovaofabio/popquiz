@@ -8,11 +8,12 @@ class InputCustomizado extends StatelessWidget {
   late final bool autofocus;
   late final bool leitura;
   late final TextInputType type;
-  late final Icon icone;
   late final TextCapitalization letras;
 
   final List<TextInputFormatter>? inputFormaters;
+  final Icon? icone;
   final int? maxLinhas;
+  final int? maxCaracteres;
   final bool? cursor;
   final FocusNode? focusNode;
   final bool? habilitar;
@@ -23,8 +24,9 @@ class InputCustomizado extends StatelessWidget {
   final String? textoAjuda;
   final TextEditingController? controller;
 
-  InputCustomizado(this.icone,
-      {this.controller,
+  InputCustomizado(
+      {this.icone,
+      this.controller,
       this.obscure = false,
       this.autofocus = false,
       this.leitura = false,
@@ -33,6 +35,7 @@ class InputCustomizado extends StatelessWidget {
       this.habilitar,
       this.inputFormaters,
       this.maxLinhas,
+      this.maxCaracteres,
       this.focusNode,
       this.cursor,
       this.textoAjuda,
@@ -58,6 +61,7 @@ class InputCustomizado extends StatelessWidget {
       style: TextStyle(fontSize: 18),
       inputFormatters: this.inputFormaters,
       maxLines: this.maxLinhas,
+      maxLength: this.maxCaracteres,
       onSaved: this.onSaved,
       onTap: this.onTap,
       validator: this.validator,

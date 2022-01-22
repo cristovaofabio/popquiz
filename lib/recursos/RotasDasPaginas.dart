@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:popquiz/telas/NovaPergunta.dart';
 import 'package:popquiz/telas/NovoQuestionario.dart';
 import 'package:popquiz/telas/PaginaInicial.dart';
 import 'package:popquiz/telas/PerguntasDoQuestionario.dart';
@@ -6,6 +7,7 @@ import 'package:popquiz/telas/PerguntasDoQuestionario.dart';
 class RotasDasPaginas {
   static const String ROTA_PAGINA_INICIAL = "/";
   static const String ROTA_NOVO_QUESTIONARIO = "/novoquestionario";
+  static const String ROTA_NOVA_PERGUNTA = "/novapergunta";
   static const String ROTA_PERGUNTAS_DO_QUESTIONARIO = "/perguntasdoquestionario";
 
   static Route<dynamic> gerarRota(RouteSettings settings) {
@@ -16,6 +18,8 @@ class RotasDasPaginas {
         return MaterialPageRoute(builder: (_) => PaginaInicial());
       case ROTA_NOVO_QUESTIONARIO:
         return MaterialPageRoute(builder: (_) => NovoQuestionario());
+      case ROTA_NOVA_PERGUNTA:
+        return MaterialPageRoute(builder: (_) => NovaPergunta(argumentoInformado as String));
       case ROTA_PERGUNTAS_DO_QUESTIONARIO:
         return MaterialPageRoute(builder: (_) => PerguntasDoQuestionario(argumentoInformado as String));
       default:
