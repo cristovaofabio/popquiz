@@ -21,6 +21,7 @@ class PerguntasDoQuestionario extends StatefulWidget {
 class _PerguntasDoQuestionarioState extends State<PerguntasDoQuestionario> {
   TextEditingController _controllerResposta = TextEditingController();
   List _listaDeRespostas = [];
+  List _listaDeQuestionarios = [];
 
   _listarPerguntasDoQuestionario(String idDoQuestionario) {
     ApiMock api = ApiMock();
@@ -30,6 +31,30 @@ class _PerguntasDoQuestionarioState extends State<PerguntasDoQuestionario> {
   _mudarParaATelaNovaPergunta() {
     Navigator.pushReplacementNamed(context, RotasDasPaginas.ROTA_NOVA_PERGUNTA,
         arguments: widget._idDoQuestionario.toString());
+  }
+
+  Future<void> _atualizarStatusQuestionario(String statusDoQuestionario) async {
+    String idDoQuestionario = widget._idDoQuestionario.toString();
+
+    Map<String, dynamic> resposta = Map();
+    resposta["idDoQuestionario"] = idDoQuestionario;
+    resposta["status"] = statusDoQuestionario;
+
+    _listaDeQuestionarios.add(resposta);
+
+    await _atualizarArquivoComQuestionarios();
+  }
+
+  Future<void> _atualizarArquivoComQuestionarios() async {
+    var arquivo = await _recuperarArquivoComQuestionarios();
+    String dados = json.encode(_listaDeQuestionarios);
+    arquivo.writeAsString(dados);
+  }
+
+  Future<File> _recuperarArquivoComQuestionarios() async {
+    final diretorio = await getApplicationDocumentsDirectory();
+    String caminho = diretorio.path;
+    return File("$caminho/questionarios.json");
   }
 
   Future<void> _salvarResposta(String idDaPergunta) async {
@@ -72,6 +97,15 @@ class _PerguntasDoQuestionarioState extends State<PerguntasDoQuestionario> {
     }
   }
 
+  _lerArquivoComQuestionarios() async {
+    try {
+      final arquivo = await _recuperarArquivoComQuestionarios();
+      return arquivo.readAsString();
+    } catch (e) {
+      return null;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -79,6 +113,9 @@ class _PerguntasDoQuestionarioState extends State<PerguntasDoQuestionario> {
       setState(() {
         _listaDeRespostas = json.decode(dados);
       });
+    });
+    _lerArquivoComQuestionarios().then((dados) {
+      _listaDeQuestionarios = json.decode(dados);
     });
   }
 
@@ -129,6 +166,8 @@ class _PerguntasDoQuestionarioState extends State<PerguntasDoQuestionario> {
                 );
               } else {
                 int quantidadeDePerguntas = snapshot.data!.length;
+                int quantidadeDePerguntasComResposta = 0;
+
                 if (quantidadeDePerguntas == 0) {
                   return Lottie.asset("assets/animacaoNenhumaPergunta.json");
                 } else {
@@ -140,6 +179,15 @@ class _PerguntasDoQuestionarioState extends State<PerguntasDoQuestionario> {
 
                       bool perguntaTemRespota = _verificarSePerguntaJaTemResposta(pergunta.id);
                       
+                      if(perguntaTemRespota){
+                        quantidadeDePerguntasComResposta++;
+                        if(quantidadeDePerguntasComResposta==quantidadeDePerguntas){
+                          _atualizarStatusQuestionario("completo");
+                        }
+                      }
+                      if(index==quantidadeDePerguntas-1 && quantidadeDePerguntasComResposta<quantidadeDePerguntas){
+                        _atualizarStatusQuestionario("incompleto");
+                      }
                       return GestureDetector(
                         onTap: () {
                           //Adicionar uma resposta:

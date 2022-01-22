@@ -54,43 +54,38 @@ class _TodosOsQuestionariosState extends State<TodosOsQuestionarios> {
                 );
               } else {
                 return ListView.builder(
-                    itemCount: snapshot.data!.length,
-                    itemBuilder: (context, index) {
-                      List<Questionario>? lista = snapshot.data;
-                      Questionario questionario = lista![index];
+                  itemCount: snapshot.data!.length,
+                  itemBuilder: (context, index) {
+                    List<Questionario>? lista = snapshot.data;
+                    Questionario questionario = lista![index];
 
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.pushNamed(context,
-                              RotasDasPaginas.ROTA_PERGUNTAS_DO_QUESTIONARIO,
-                              arguments: questionario.id.toString());
-                        },
-                        child: Card(
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(curvaturas),
-                            side: BorderSide(color: Colors.grey, width: 1),
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.all(10),
-                            child: FittedBox(
-                              child: Text(
-                                '${questionario.titulo}',
-                                style: TextStyle(
-                                  fontSize: tamanhoDaLetra,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(context,
+                            RotasDasPaginas.ROTA_PERGUNTAS_DO_QUESTIONARIO,
+                            arguments: questionario.id.toString());
+                      },
+                      child: Card(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(curvaturas),
+                          side: BorderSide(color: Colors.grey, width: 1),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(10),
+                          child: ListTile(
+                            title: Text(
+                              questionario.titulo,
+                              style: TextStyle(
+                                fontSize: tamanhoDaLetra + 2,
                               ),
                             ),
                           ),
                         ),
-                      );
-
-                      /* ListTile(
-                        title: Text(questionario.titulo),
-                        subtitle: Text(questionario.id.toString()),
-                      ); */
-                    });
+                      ),
+                    );
+                  },
+                );
               }
           }
         },
