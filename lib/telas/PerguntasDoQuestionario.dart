@@ -1,5 +1,8 @@
+import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:popquiz/main.dart';
 import 'package:popquiz/model/Pergunta.dart';
 import 'package:popquiz/recursos/ApiMock.dart';
@@ -16,15 +19,78 @@ class PerguntasDoQuestionario extends StatefulWidget {
 }
 
 class _PerguntasDoQuestionarioState extends State<PerguntasDoQuestionario> {
+  TextEditingController _controllerResposta = TextEditingController();
+  List _listaDeRespostas = [];
+
   _listarPerguntasDoQuestionario(String idDoQuestionario) {
     ApiMock api = ApiMock();
     return api.recuperarPergunstasDoQuestionario(idDoQuestionario);
   }
 
   _mudarParaATelaNovaPergunta() {
-    //Verificar isso!
     Navigator.pushReplacementNamed(context, RotasDasPaginas.ROTA_NOVA_PERGUNTA,
         arguments: widget._idDoQuestionario.toString());
+  }
+
+  Future<void> _salvarResposta(String idDaPergunta) async {
+    String _respostaInformada = _controllerResposta.text;
+    String idDoQuestionario = widget._idDoQuestionario.toString();
+
+    Map<String, dynamic> resposta = Map();
+
+    resposta["id"] = idDaPergunta.toString() + idDoQuestionario; //ID da resposta
+    resposta["idDaPergunta"] = idDaPergunta.toString();
+    resposta["idDoQuestionario"] = idDoQuestionario;
+    resposta["texto"] = _respostaInformada;
+
+    setState(() {
+      _listaDeRespostas.add(resposta);
+    });
+
+    _controllerResposta.text = "";
+    await _atualizarArquivoComRespostas();
+  }
+
+  Future<void> _atualizarArquivoComRespostas() async {
+    var arquivo = await _recuperarArquivoComRespostas();
+    String dados = json.encode(_listaDeRespostas);
+    arquivo.writeAsString(dados);
+  }
+
+  Future<File> _recuperarArquivoComRespostas() async {
+    final diretorio = await getApplicationDocumentsDirectory();
+    String caminho = diretorio.path;
+    return File("$caminho/respostas.json");
+  }
+
+  _lerArquivoComRespostas() async {
+    try {
+      final arquivo = await _recuperarArquivoComRespostas();
+      return arquivo.readAsString();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _lerArquivoComRespostas().then((dados) {
+      setState(() {
+        _listaDeRespostas = json.decode(dados);
+      });
+    });
+  }
+
+  bool _verificarSePerguntaJaTemResposta(String idDaPergunta){
+    for (var map in _listaDeRespostas) {
+      if (map?.containsKey("idDaPergunta") ?? false) {
+        if (map!["idDaPergunta"] == idDaPergunta) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   @override
@@ -72,9 +138,71 @@ class _PerguntasDoQuestionarioState extends State<PerguntasDoQuestionario> {
                       List<Pergunta>? lista = snapshot.data;
                       Pergunta pergunta = lista![index];
 
+                      bool perguntaTemRespota = _verificarSePerguntaJaTemResposta(pergunta.id);
+                      
                       return GestureDetector(
                         onTap: () {
-                          print('ID: ${pergunta.id} selecionado');
+                          //Adicionar uma resposta:
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                elevation: 1,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(curvaturas),
+                                ),
+                                title: Text(
+                                  perguntaTemRespota 
+                                    ? "Nova resposta" 
+                                    : "Adicionar resposta"
+                                  ),
+                                content: TextField(
+                                  decoration: InputDecoration(labelText: "Digite a sua resposta"),
+                                  controller: _controllerResposta,
+                                ),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context); //Fechar AlertDialog
+                                    },
+                                    child: Container(
+                                      padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                      decoration: BoxDecoration(
+                                        color: Colors.red[400],
+                                        borderRadius: BorderRadius.circular(curvaturas),
+                                      ),
+                                      child: Text(
+                                        "Cancelar",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () async {
+                                      await _salvarResposta(pergunta.id.toString()).then((_){
+                                        Navigator.pop(context); //Fechar AlertDialog
+                                      });
+                                    },
+                                    child: Container(
+                                      padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green[400],
+                                        borderRadius: BorderRadius.circular(curvaturas)
+                                      ),
+                                      child: Text(
+                                        "Responder",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
                         },
                         child: Card(
                           elevation: 0,
@@ -82,11 +210,23 @@ class _PerguntasDoQuestionarioState extends State<PerguntasDoQuestionario> {
                             borderRadius: BorderRadius.circular(curvaturas),
                             side: BorderSide(color: Colors.grey, width: 1),
                           ),
-                          child: Padding(
+                          child: 
+                          
+                          Padding(
                             padding: EdgeInsets.all(10),
                             child: ListTile(
-                              title: Text(pergunta.texto),
-                              subtitle: Text(pergunta.descricao),
+                              title: Text(
+                                pergunta.texto,
+                                style: TextStyle(
+                                  color: perguntaTemRespota ? Colors.green : Colors.grey[600]
+                                ),
+                              ),
+                              subtitle: Text(
+                                pergunta.descricao,
+                                style: TextStyle(
+                                  color: perguntaTemRespota ? Colors.green : Colors.grey[600]
+                                ),
+                              ),
                             ),
                           ),
                         ),

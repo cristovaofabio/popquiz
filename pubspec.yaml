@@ -30,6 +30,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   lottie: ^1.2.0 #adicionar animações
   http: ^0.13.3 #requisicoes http
+  path_provider: ^2.0.2 #salvar dados na memória interna do dispositivo
 
 dev_dependencies:
   flutter_test:
