@@ -1,16 +1,15 @@
 # popquiz
 
-A new Flutter project.
+Aplicação que permite ao usuário responder questionários previamente cadastrados.
 
-## Getting Started
+## Algumas telas do app:
 
-This project is a starting point for a Flutter application.
+<div align="center">
+  <img src="https://user-images.githubusercontent.com/19698296/150693394-b5a00587-04cd-4910-93c8-3dd89dad3374.png" width="350px" />
+  <img src="https://user-images.githubusercontent.com/19698296/150693393-6bd65755-7968-47df-b940-c7d9f8be4c5b.png" width="350px" />
+</div>
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+<div align="center">
+  <img src="https://user-images.githubusercontent.com/19698296/150693391-163ed748-6caf-43f7-a2d0-422054a83d07.png" width="350px" />
+  <img src="https://user-images.githubusercontent.com/19698296/150693389-8d4584c8-ec12-45e5-8a22-5c63d380ca53.png" width="350px" />
+</div>
