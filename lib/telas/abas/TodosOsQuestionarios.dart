@@ -4,6 +4,7 @@ import 'package:popquiz/model/Questionario.dart';
 import 'package:popquiz/recursos/ApiMock.dart';
 import 'package:popquiz/recursos/Constantes.dart';
 import 'package:popquiz/recursos/RotasDasPaginas.dart';
+import 'package:popquiz/recursos/widget/MensagemCarregando.dart';
 
 class TodosOsQuestionarios extends StatefulWidget {
   const TodosOsQuestionarios({Key? key}) : super(key: key);
@@ -41,11 +42,7 @@ class _TodosOsQuestionariosState extends State<TodosOsQuestionarios> {
           switch (snapshot.connectionState) {
             case ConnectionState.none:
             case ConnectionState.waiting:
-              return Center(
-                child: CircularProgressIndicator(
-                  color: temaPadrao.buttonColor,
-                ),
-              );
+              return MensagemCarregando(texto: 'Carregando questionários');
             case ConnectionState.active:
             case ConnectionState.done:
               if (snapshot.hasError) {
@@ -53,31 +50,35 @@ class _TodosOsQuestionariosState extends State<TodosOsQuestionarios> {
                   child: Text("Erro ao carregar os dados!"),
                 );
               } else {
+                int quantidadeDeQuestionario = snapshot.data!.length;
                 return ListView.builder(
                   itemCount: snapshot.data!.length,
                   itemBuilder: (context, index) {
                     List<Questionario>? lista = snapshot.data;
                     Questionario questionario = lista![index];
 
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.pushNamed(context,
-                            RotasDasPaginas.ROTA_PERGUNTAS_DO_QUESTIONARIO,
-                            arguments: questionario.id.toString());
-                      },
-                      child: Card(
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(curvaturas),
-                          side: BorderSide(color: Colors.grey, width: 1),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(10),
-                          child: ListTile(
-                            title: Text(
-                              questionario.titulo,
-                              style: TextStyle(
-                                fontSize: tamanhoDaLetra + 2,
+                    return Padding(
+                      padding: (index == quantidadeDeQuestionario - 1)
+                          ? EdgeInsets.only(bottom: 75)
+                          : EdgeInsets.only(bottom: 0),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(context,
+                              RotasDasPaginas.ROTA_PERGUNTAS_DO_QUESTIONARIO,
+                              arguments: questionario.id.toString());
+                        },
+                        child: Card(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(curvaturas),
+                            side: BorderSide(color: Colors.grey, width: 1),
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.all(10),
+                            child: ListTile(
+                              title: Text(
+                                questionario.titulo,
+                                style: TextStyle(fontSize: tamanhoDaLetra + 2),
                               ),
                             ),
                           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:popquiz/recursos/Constantes.dart';
 import 'package:popquiz/telas/abas/ApenasOsQuestionariosRespondidos.dart';
 import 'package:popquiz/telas/abas/TodosOsQuestionarios.dart';
@@ -17,6 +18,9 @@ class _PaginaInicialState extends State<PaginaInicial>
   @override
   void initState() {
     super.initState();
+    //A tela do app sempre irá se manter na vertical:
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    
     _controladorDaAba = TabController(
       length: 2,
       vsync: this,

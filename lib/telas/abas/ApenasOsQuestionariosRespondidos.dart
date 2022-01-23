@@ -3,11 +3,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:popquiz/main.dart';
 import 'package:popquiz/model/Questionario.dart';
 import 'package:popquiz/recursos/ApiMock.dart';
 import 'package:popquiz/recursos/Constantes.dart';
 import 'package:popquiz/recursos/RotasDasPaginas.dart';
+import 'package:popquiz/recursos/widget/MensagemCarregando.dart';
 
 class ApenasOsQuestionariosRespondidos extends StatefulWidget {
   const ApenasOsQuestionariosRespondidos({Key? key}) : super(key: key);
@@ -74,11 +74,7 @@ class _ApenasOsQuestionariosRespondidosState
           switch (snapshot.connectionState) {
             case ConnectionState.none:
             case ConnectionState.waiting:
-              return Center(
-                child: CircularProgressIndicator(
-                  color: temaPadrao.buttonColor,
-                ),
-              );
+              return MensagemCarregando(texto: 'Questionários totalmente respondidos');
             case ConnectionState.active:
             case ConnectionState.done:
               if (snapshot.hasError) {
