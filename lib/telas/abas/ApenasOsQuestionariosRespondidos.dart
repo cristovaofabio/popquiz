@@ -53,9 +53,12 @@ class _ApenasOsQuestionariosRespondidosState
     for (var map in _listaDeQuestionarios) {
       String status = map!["status"];
       String id = map["idDoQuestionario"];
-      if (id.contains(idDoQuestionario)) {
-        if (status.contains("completo")) {
+      if (id==idDoQuestionario) {
+        if (status=="completo") {
+          print("ID completo: "+id.toString());
           return true;
+        }else{
+          return false;
         }
       }
     }
@@ -90,9 +93,7 @@ class _ApenasOsQuestionariosRespondidosState
                     List<Questionario>? lista = snapshot.data;
                     Questionario questionario = lista![index];
 
-                    questionarioCompleto =
-                        _verificarStatusDoQuestionario(questionario.id);
-                    print(questionarioCompleto);
+                    questionarioCompleto = _verificarStatusDoQuestionario(questionario.id);
                     if (questionarioCompleto) {
                       return GestureDetector(
                         onTap: () {

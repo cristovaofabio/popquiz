@@ -20,6 +20,7 @@ class PerguntasDoQuestionario extends StatefulWidget {
 
 class _PerguntasDoQuestionarioState extends State<PerguntasDoQuestionario> {
   TextEditingController _controllerResposta = TextEditingController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List _listaDeRespostas = [];
   List _listaDeQuestionarios = [];
 
@@ -33,6 +34,29 @@ class _PerguntasDoQuestionarioState extends State<PerguntasDoQuestionario> {
         arguments: widget._idDoQuestionario.toString());
   }
 
+  _verRespostaDaPergunta(String idDaPergunta) {
+
+    for (var map in _listaDeRespostas) {
+      if (map?.containsKey("idDaPergunta") ?? false) {
+        if (map!["idDaPergunta"] == idDaPergunta) {
+          return showDialog(
+            context: context,
+            builder: (builder) {
+              return AlertDialog(
+                elevation: 1,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(curvaturas),
+                ),
+                title: Text('Resposta!'),
+                content: Text(map!["texto"]),
+              );
+            },
+          );
+        }
+      }
+    }
+  }
+
   Future<void> _atualizarStatusQuestionario(String statusDoQuestionario) async {
     String idDoQuestionario = widget._idDoQuestionario.toString();
 
@@ -40,6 +64,11 @@ class _PerguntasDoQuestionarioState extends State<PerguntasDoQuestionario> {
     resposta["idDoQuestionario"] = idDoQuestionario;
     resposta["status"] = statusDoQuestionario;
 
+    try{
+      _listaDeQuestionarios.removeWhere((element) => element["idDoQuestionario"] == idDoQuestionario);
+    }catch(erro){
+
+    }
     _listaDeQuestionarios.add(resposta);
 
     await _atualizarArquivoComQuestionarios();
@@ -106,6 +135,78 @@ class _PerguntasDoQuestionarioState extends State<PerguntasDoQuestionario> {
     }
   }
 
+  _caixaAlerta(context, bool perguntaTemRespota, String idDaPergunta,
+      String textoPrimeiroBotao, String textoSegundoBotao) {
+    return showDialog(
+      barrierDismissible: false, //não pode fechar o dialog quando houver clique fora dele
+      context: context,
+      builder: (builder) {
+        return AlertDialog(
+          elevation: 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(curvaturas),
+          ),
+          title: Text(
+            !perguntaTemRespota
+                ? 'Adicionar resposta'
+                : 'Deseja ver a sua resposta?',
+          ),
+          content: !perguntaTemRespota
+              ? TextField(
+                  decoration: InputDecoration(labelText: "Digite a sua resposta"),
+                  controller: _controllerResposta,
+                )
+              : Text("Escolha uma ação"),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Container(
+                padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+                decoration: BoxDecoration(
+                  color: Colors.grey[600],
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  textoPrimeiroBotao, //geralmente botao cancelar
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: !perguntaTemRespota
+                  ? () async {
+                      await _salvarResposta(idDaPergunta).then((_) {
+                        Navigator.pop(context); //Fechar AlertDialog
+                      });
+                    }
+                  : () {
+                      Navigator.pop(context);
+                      _verRespostaDaPergunta(idDaPergunta);
+                    },
+              child: Container(
+                padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+                decoration: BoxDecoration(
+                  color: Colors.green[400],
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  textoSegundoBotao,
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -119,7 +220,7 @@ class _PerguntasDoQuestionarioState extends State<PerguntasDoQuestionario> {
     });
   }
 
-  bool _verificarSePerguntaJaTemResposta(String idDaPergunta){
+  bool _verificarSePerguntaJaTemResposta(String idDaPergunta) {
     for (var map in _listaDeRespostas) {
       if (map?.containsKey("idDaPergunta") ?? false) {
         if (map!["idDaPergunta"] == idDaPergunta) {
@@ -135,6 +236,7 @@ class _PerguntasDoQuestionarioState extends State<PerguntasDoQuestionario> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Todas as perguntas"),
+        key: _scaffoldKey,
         elevation: 0,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -176,81 +278,38 @@ class _PerguntasDoQuestionarioState extends State<PerguntasDoQuestionario> {
                     itemBuilder: (context, index) {
                       List<Pergunta>? lista = snapshot.data;
                       Pergunta pergunta = lista![index];
+                      bool perguntaTemRespota =
+                          _verificarSePerguntaJaTemResposta(pergunta.id);
 
-                      bool perguntaTemRespota = _verificarSePerguntaJaTemResposta(pergunta.id);
-                      
-                      if(perguntaTemRespota){
+                      if (perguntaTemRespota) {
                         quantidadeDePerguntasComResposta++;
-                        if(quantidadeDePerguntasComResposta==quantidadeDePerguntas){
+                        if (quantidadeDePerguntasComResposta ==
+                            quantidadeDePerguntas) {
                           _atualizarStatusQuestionario("completo");
                         }
                       }
-                      if(index==quantidadeDePerguntas-1 && quantidadeDePerguntasComResposta<quantidadeDePerguntas){
+                      if (index == quantidadeDePerguntas - 1 &&
+                          quantidadeDePerguntasComResposta <
+                              quantidadeDePerguntas) {
                         _atualizarStatusQuestionario("incompleto");
                       }
                       return GestureDetector(
                         onTap: () {
-                          //Adicionar uma resposta:
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                elevation: 1,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(curvaturas),
-                                ),
-                                title: Text(
-                                  perguntaTemRespota 
-                                    ? "Nova resposta" 
-                                    : "Adicionar resposta"
-                                  ),
-                                content: TextField(
-                                  decoration: InputDecoration(labelText: "Digite a sua resposta"),
-                                  controller: _controllerResposta,
-                                ),
-                                actions: <Widget>[
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context); //Fechar AlertDialog
-                                    },
-                                    child: Container(
-                                      padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                      decoration: BoxDecoration(
-                                        color: Colors.red[400],
-                                        borderRadius: BorderRadius.circular(curvaturas),
-                                      ),
-                                      child: Text(
-                                        "Cancelar",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  TextButton(
-                                    onPressed: () async {
-                                      await _salvarResposta(pergunta.id.toString()).then((_){
-                                        Navigator.pop(context); //Fechar AlertDialog
-                                      });
-                                    },
-                                    child: Container(
-                                      padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                      decoration: BoxDecoration(
-                                        color: Colors.green[400],
-                                        borderRadius: BorderRadius.circular(curvaturas)
-                                      ),
-                                      child: Text(
-                                        "Responder",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
+                          perguntaTemRespota
+                              ? _caixaAlerta(
+                                  _scaffoldKey.currentContext,
+                                  perguntaTemRespota,
+                                  pergunta.id.toString(),
+                                  'Cancelar',
+                                  'Ver resposta',
+                                )
+                              : _caixaAlerta(
+                                  _scaffoldKey.currentContext,
+                                  perguntaTemRespota,
+                                  pergunta.id.toString(),
+                                  'Cancelar',
+                                  'Responder',
+                                );
                         },
                         child: Card(
                           elevation: 0,
@@ -258,22 +317,22 @@ class _PerguntasDoQuestionarioState extends State<PerguntasDoQuestionario> {
                             borderRadius: BorderRadius.circular(curvaturas),
                             side: BorderSide(color: Colors.grey, width: 1),
                           ),
-                          child: 
-                          
-                          Padding(
+                          child: Padding(
                             padding: EdgeInsets.all(10),
                             child: ListTile(
                               title: Text(
                                 pergunta.texto,
                                 style: TextStyle(
-                                  color: perguntaTemRespota ? Colors.green : Colors.grey[600]
-                                ),
+                                    color: perguntaTemRespota
+                                        ? Colors.green
+                                        : Colors.grey[600]),
                               ),
                               subtitle: Text(
                                 pergunta.descricao,
                                 style: TextStyle(
-                                  color: perguntaTemRespota ? Colors.green : Colors.grey[600]
-                                ),
+                                    color: perguntaTemRespota
+                                        ? Colors.green
+                                        : Colors.grey[600]),
                               ),
                             ),
                           ),
